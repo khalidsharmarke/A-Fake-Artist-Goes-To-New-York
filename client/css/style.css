@@ -1,0 +1,5 @@
+#sketchpad canvas {
+    border: .2rem solid #eee;
+    cursor: crosshair;
+    display: block;
+}
