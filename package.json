@@ -1,0 +1,28 @@
+{
+    "name": "A-Fake-Artist-Goes-To-New-York",
+    "version": "1.0.0",
+    "description": "a fan-made online version of the card game by Oink Games",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index",
+        "dev": "nodemon index"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/khalidsharmarke/A-Fake-Artist-Goes-To-New-York.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/khalidsharmarke/A-Fake-Artist-Goes-To-New-York/issues"
+    },
+    "homepage": "https://github.com/khalidsharmarke/A-Fake-Artist-Goes-To-New-York#readme",
+    "dependencies": {
+        "express": "^4.17.1",
+        "socket.io": "^3.0.4"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.6"
+    }
+}
