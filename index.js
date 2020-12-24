@@ -15,6 +15,7 @@ io.on('connection', socket => {
     // socket.rooms 
     socket.join('test room')
 
+    // TODO:
     // here we should instantiate a game obj
     // to track game state and stack history
 
@@ -22,6 +23,10 @@ io.on('connection', socket => {
     socket.on('gameplay-stroke', data => {
         // get which room from sender
         // send to all in same room
-        io.in([...socket.rooms][1]).emit('new-image', data)
+        // if(socket.rooms.has('test room')){
+
+        // }
+        console.log(socket.rooms)
+        io.in('test room').emit('new-image', data)
     })
 });
