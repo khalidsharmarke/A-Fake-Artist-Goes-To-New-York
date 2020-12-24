@@ -29,6 +29,7 @@ function sketchpad_init(Sketchpad) {
             size: 5
         },
         onDrawEnd: function() {
+        	// will need more thorough logic later
             pad.setReadOnly(true)
         }
     });
@@ -56,7 +57,27 @@ function game_init(pad) {
     let player_number = Math.floor(Math.random() * 10) // temporary placeholder for player number
 
     pad.setLineColor(getPlayerColorFromNumber(player_number))
+
+
+    document.getElementById('submit_stroke').onclick = function() {
+    	submit_stroke_to_server(player_number, pad)
+    };
+
 }
+
+function submit_stroke_to_server(player_number, pad){
+	// after a player has submitted their stroke,
+	// this function exports the whiteboard as JSON and sends it to the server
+	newBoardState = JSON.stringify(pad.toJSON())
+	// console.log(newBoardState)
+	socket.emit('gameplay-stroke', {
+		player_number: player_number,
+	    new_board_state: encodeURIComponent(newBoardState)
+	})
+}
+
+
+
 requirejs(['responsive-sketchpad/sketchpad'],
     function(Sketchpad) {
         pad = sketchpad_init(Sketchpad)
@@ -64,3 +85,8 @@ requirejs(['responsive-sketchpad/sketchpad'],
 
     }
 )
+const socket = io()
+
+socket.on('response', data => {
+    console.log("Server says: " + JSON.stringify(data))
+})

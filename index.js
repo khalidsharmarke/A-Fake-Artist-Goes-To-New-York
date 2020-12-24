@@ -10,10 +10,12 @@ app.use('/', express.static('client'))
 
 io.on('connection', socket => {
     console.log('a user connected');
-    socket.on('request', data => {
-        console.log(data)
+
+
+    socket.on('gameplay-stroke', data=> {
+		console.log(data)
         io.emit('response', {
-            test: 123
+            'response': 'ack'
         })
     })
 });

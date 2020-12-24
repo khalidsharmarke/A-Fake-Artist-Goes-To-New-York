@@ -19,11 +19,14 @@
             <div class="col-9" id="sketchpad"></div>
             <div class="col-3" id="controls">
                 <div class="row">
-                    <div class='col-6'>
+                    <div class='col-4'>
                         <button class="u-full-width" id="undo">Undo</button>
                     </div>
-                    <div class='col-6'>
+                    <div class='col-4'>
                         <button class="u-full-width" id="redo">Redo</button>
+                    </div>
+                    <div class='col-4'>
+                        <button class="u-full-width" id="submit_stroke">Submit Stroke</button>
                     </div>
                 </div>
 
@@ -33,7 +36,6 @@
     </div>
     <!-- Needs to be after the div with id 'sketchpad' is created -->
     <script data-main="scripts/index" src="https://requirejs.org/docs/release/2.3.6/comments/require.js"></script>
-    <script src="./scripts/socket-control.js"></script>
 </body>
 
 </html>
