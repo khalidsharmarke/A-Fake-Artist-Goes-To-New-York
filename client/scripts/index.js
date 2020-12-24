@@ -29,7 +29,7 @@ function sketchpad_init(Sketchpad) {
             size: 5
         },
         onDrawEnd: function() {
-        	// will need more thorough logic later
+            // will need more thorough logic later
             pad.setReadOnly(true)
         }
     });
@@ -60,23 +60,28 @@ function game_init(pad) {
 
 
     document.getElementById('submit_stroke').onclick = function() {
-    	submit_stroke_to_server(player_number, pad)
+        submit_stroke_to_server(player_number, pad)
     };
 
 }
 
-function submit_stroke_to_server(player_number, pad){
-	// after a player has submitted their stroke,
-	// this function exports the whiteboard as JSON and sends it to the server
-	const newBoardState = JSON.stringify(pad.toJSON())
-	// console.log(newBoardState)
-	socket.emit('gameplay-stroke', {
-		player_number: player_number,
-	    new_board_state: encodeURIComponent(newBoardState)
-	})
+function submit_stroke_to_server(player_number, pad) {
+    // after a player has submitted their stroke,
+    // this function exports the whiteboard as JSON and sends it to the server
+    const newBoardState = JSON.stringify(pad.toJSON())
+
+    socket.emit('gameplay-stroke', {
+        player_number: player_number,
+        new_board_state: encodeURIComponent(newBoardState)
+    })
 }
 
-
+function update_image_from_server(data) {
+    // needs implementation
+    console.log('new image received')
+    console.log(data)
+    return 
+}
 
 requirejs(['responsive-sketchpad/sketchpad'],
     function(Sketchpad) {
@@ -85,8 +90,7 @@ requirejs(['responsive-sketchpad/sketchpad'],
 
     }
 )
+
 const socket = io()
 
-socket.on('response', data => {
-    console.log("Server says: " + JSON.stringify(data))
-})
+socket.on('new-image', update_image_from_server)
