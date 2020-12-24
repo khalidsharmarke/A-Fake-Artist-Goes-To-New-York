@@ -68,7 +68,7 @@ function game_init(pad) {
 function submit_stroke_to_server(player_number, pad){
 	// after a player has submitted their stroke,
 	// this function exports the whiteboard as JSON and sends it to the server
-	newBoardState = JSON.stringify(pad.toJSON())
+	const newBoardState = JSON.stringify(pad.toJSON())
 	// console.log(newBoardState)
 	socket.emit('gameplay-stroke', {
 		player_number: player_number,
