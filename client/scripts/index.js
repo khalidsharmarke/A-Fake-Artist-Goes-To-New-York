@@ -65,19 +65,20 @@ function game_init(pad) {
 
 }
 
+// after a player has submitted their stroke,
+// this function exports the whiteboard as JSON and sends it to the server
 function submit_stroke_to_server(player_number, pad) {
-    // after a player has submitted their stroke,
-    // this function exports the whiteboard as JSON and sends it to the server
     const newBoardState = JSON.stringify(pad.toJSON())
-
+    console.log(newBoardState)
     socket.emit('gameplay-stroke', {
         player_number: player_number,
         new_board_state: encodeURIComponent(newBoardState)
     })
 }
 
+// TO DO:
+// needs implementation
 function update_image_from_server(data) {
-    // needs implementation
     console.log('new image received')
     console.log(data)
     return 
@@ -92,5 +93,20 @@ requirejs(['responsive-sketchpad/sketchpad'],
 )
 
 const socket = io()
+
+// TO DO:
+// implement socket event handling
+
+// redirect to homepage on error
+socket.on('connect_error', error => {
+    console.log(error)
+    alert('connection error')
+    window.location = '/'
+})
+socket.on('disconnect', reason => {
+    console.log(reason)
+    alert('disconnected')
+    window.location = '/'
+})
 
 socket.on('new-image', update_image_from_server)

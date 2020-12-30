@@ -9,16 +9,21 @@ const io = require('socket.io')(server)
 
 // Express Middleware POST parsers ///////////////////////////////////
 // create application/json parser
-var jsonParser = bodyParser.json()
+const jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
+const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
+// TO DO:
+// Implement validation middleware
+// protect '/game/'
 app.use('/', express.static('client'))
 
 // Express cookie ////////////////////////////////////////////////////
 // need cookieParser middleware before we can do anything with cookies
-var cookie = require("cookie");
+const cookie = require("cookie");
 const cookieParser = require('cookie-parser');
+// TO DO:
+// change secret
 const COOKIE_SECRET = 'TEMPORARY_SECRET_TO_BE_REPLACED_W_ENV_VAR'
 const cookieOptions = {
     maxAge: 1000 * 60 * 15, // would expire after 15 minutes
@@ -27,14 +32,13 @@ const cookieOptions = {
 }
 app.use(cookieParser());
 
-
-
 function generate_game_id(){
-	return  Math.floor(Math.random() * 1000)
+	return Math.floor(Math.random() * 1000)
 }
 
-list_of_active_games = []
-
+// TO DO:
+// implement check if game is alive
+let list_of_active_games = []
 
 app.post('/create_game', urlencodedParser, (req, res)=>{
 	let new_game_id = generate_game_id()
@@ -60,58 +64,61 @@ app.post('/create_game', urlencodedParser, (req, res)=>{
 })
 
 app.post('/join_game', urlencodedParser, (req, res)=>{
-	let game_id_to_join = req.body.game_id
+	const game_id_to_join = Number(req.body.game_id)
 	console.log(list_of_active_games)
-	if(list_of_active_games.indexOf(game_id_to_join) !== -1){
+	if(list_of_active_games.includes(game_id_to_join)){
 		// game exists
 	    res.cookie('room_id', game_id_to_join, cookieOptions) // options is optional
 		res.redirect('/game')
 	}
 	else {
 		console.log(`${game_id_to_join} does not exist. redirecting to /`)
-		// TODO : need to flash on paeg that the game_id entered doesnt exist
+        // TODO : 
+        // need to flash on page that the game_id entered doesnt exist
 		res.redirect('/')
 	}
 })
 
-
-
-io.on('connection', socket => {
-	try{
-		console.log(socket.request.headers.cookie)
-		let parsed_cookie = cookie.parse(socket.request.headers.cookie)
-		console.log(parsed_cookie)
-		let room_id = parsed_cookie['room_id']
-	   	console.log(`a user connected w cookie : ${room_id}`);	
+// checks if client is assigned to room
+function getRoomFromSocket(socket_obj){
+    try{
+		const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
+        const room_id = Number(parsed_cookie['room_id'])
+        return room_id
 	}
 	catch (e){ 
-		console.log(e)
-		console.log(`cookie not set`)
+        console.log(e)
+		return false
 	}
-	// creating a test-room for development
-    // appends to a Set object on socket
-    // socket.rooms 
-    socket.join('test room')
+}
 
+// validates socket requests
+function validateSocket(socket_obj){
+    const room_id = getRoomFromSocket(socket_obj)
+
+    // adds socket to room if client is missing room and if room exists
+    // will drop connections on server restart
+    if (room_id && !socket_obj.rooms.has(room_id) && list_of_active_games.includes(room_id)){
+        socket_obj.join(room_id)
+    }
+    // drops connection if not validated
+    else {
+        socket_obj.disconnect(true)
+    }
+
+    return room_id
+}
+
+io.on('connection', socket => {
+    const room_id = validateSocket(socket)
     // TODO:
     // here we should instantiate a game obj
     // to track game state and stack history
 
     // update users in room for new image
     socket.on('gameplay-stroke', data => {
-        // get which room from sender
-        // send to all in same room
-        // if(socket.rooms.has('test room')){
-
-        // }
-        console.log(socket.rooms)
-        io.in('test room').emit('new-image', data)
-	    socket.on('gameplay-stroke', data=> {
-			console.log(data)
-	        io.emit('response', {
-	            'response': 'ack'
-	        })
-	    })
-	});
+        console.log(data)
+        io.in(room_id).emit('new-image', data)
+    });
 });
    
