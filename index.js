@@ -82,13 +82,13 @@ app.post('/join_game', urlencodedParser, (req, res)=>{
 // checks if client is assigned to room
 function getRoomFromSocket(socket_obj){
     try{
-		const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
+        const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
         const room_id = Number(parsed_cookie['room_id'])
         return room_id
 	}
 	catch (e){ 
         console.log(e)
-		return false
+		return null
 	}
 }
 
@@ -98,7 +98,7 @@ function validateSocket(socket_obj){
 
     // adds socket to room if client is missing room and if room exists
     // will drop connections on server restart
-    if (room_id && !socket_obj.rooms.has(room_id) && list_of_active_games.includes(room_id)){
+    if (room_id !== null && !socket_obj.rooms.has(room_id) && list_of_active_games.includes(room_id)){
         socket_obj.join(room_id)
     }
     // drops connection if not validated
@@ -116,9 +116,9 @@ io.on('connection', socket => {
     // to track game state and stack history
 
     // update users in room for new image
-    socket.on('gameplay-stroke', data => {
+    socket.on('gameplay_stroke', data => {
         console.log(data)
-        io.in(room_id).emit('new-image', data)
+        io.in(room_id).emit('new_image', data)
     });
 });
    

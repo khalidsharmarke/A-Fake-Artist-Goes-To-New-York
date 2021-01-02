@@ -70,7 +70,7 @@ function game_init(pad) {
 function submit_stroke_to_server(player_number, pad) {
     const newBoardState = JSON.stringify(pad.toJSON())
     console.log(newBoardState)
-    socket.emit('gameplay-stroke', {
+    socket.emit('gameplay_stroke', {
         player_number: player_number,
         new_board_state: encodeURIComponent(newBoardState)
     })
@@ -98,15 +98,17 @@ const socket = io()
 // implement socket event handling
 
 // redirect to homepage on error
+// 
 socket.on('connect_error', error => {
     console.log(error)
     alert('connection error')
     window.location = '/'
 })
+// redirect 
 socket.on('disconnect', reason => {
     console.log(reason)
     alert('disconnected')
     window.location = '/'
 })
 
-socket.on('new-image', update_image_from_server)
+socket.on('new_image', update_image_from_server)
