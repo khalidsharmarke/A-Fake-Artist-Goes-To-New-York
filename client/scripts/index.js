@@ -94,17 +94,14 @@ requirejs(['responsive-sketchpad/sketchpad'],
 
 const socket = io()
 
-// TO DO:
-// implement socket event handling
-
 // redirect to homepage on error
-// 
+// emitted on failed connection to server
 socket.on('connect_error', error => {
     console.log(error)
     alert('connection error')
     window.location = '/'
 })
-// redirect 
+// emitted on server connection rejection
 socket.on('disconnect', reason => {
     console.log(reason)
     alert('disconnected')
