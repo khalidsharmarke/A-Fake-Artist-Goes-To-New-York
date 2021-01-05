@@ -13,10 +13,6 @@ const jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-// TO DO:
-// Implement validation middleware
-// protect '/game/'
-app.use('/', express.static('client'))
 
 // Express cookie ////////////////////////////////////////////////////
 // need cookieParser middleware before we can do anything with cookies
@@ -31,6 +27,23 @@ const cookieOptions = {
     signed: false // Indicates if the cookie should be signed
 }
 app.use(cookieParser());
+
+
+//////////////////////////////////////
+// this needs to happen after we use the cookieparser middleware
+app.use('/', function (req, res, next) {
+    // send back to root if user trying to access /game without cookie
+    if (['/game/', '/game/index.html'].includes(req.originalUrl)){
+        if ("room_id" in req.cookies){
+            // means no room_id in cookies array
+            return res.redirect('/')
+        }
+    }
+    
+    next()
+}, express.static('client'))
+//////////////////////////////////////
+
 
 function generate_game_id(){
 	return Math.floor(Math.random() * 1000)
