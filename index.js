@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use('/', function (req, res, next) {
     // send back to root if user trying to access /game without cookie
     if (['/game/', '/game/index.html'].includes(req.originalUrl)){
-        if ("room_id" in req.cookies == 0){
+        if ("room_id" in req.cookies){
             // means no room_id in cookies array
             return res.redirect('/')
         }
