@@ -37,6 +37,7 @@ function sketchpad_init(Sketchpad) {
     // undo
     function undo() {
         pad.undo();
+        pad.setReadOnly(false)
     }
     document.getElementById('undo').onclick = undo;
 
@@ -69,7 +70,6 @@ function game_init(pad) {
 // this function exports the whiteboard as JSON and sends it to the server
 function submit_stroke_to_server(player_number, pad) {
     const newBoardState = JSON.stringify(pad.toJSON())
-    console.log(newBoardState)
     socket.emit('gameplay_stroke', {
         player_number: player_number,
         new_board_state: encodeURIComponent(newBoardState)
@@ -80,7 +80,8 @@ function submit_stroke_to_server(player_number, pad) {
 // needs implementation
 function update_image_from_server(data) {
     console.log('new image received')
-    console.log(data)
+    let thing = decodeURIComponent(data.new_board_state)
+    pad.loadJSON(JSON.parse(thing))
     return 
 }
 
@@ -91,6 +92,11 @@ requirejs(['responsive-sketchpad/sketchpad'],
 
     }
 )
+
+function displayRoomID(data){
+    console.log(data)
+    document.getElementById('room_id').innerHTML = `Your Room Code is ${data}`
+}
 
 const socket = io()
 
@@ -108,4 +114,6 @@ socket.on('disconnect', reason => {
     window.location = '/'
 })
 
+socket.on('room_id', displayRoomID)
 socket.on('new_image', update_image_from_server)
+socket.on('player_number', num => console.log(num))
