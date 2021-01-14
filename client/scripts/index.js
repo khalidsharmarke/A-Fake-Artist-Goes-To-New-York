@@ -1,3 +1,5 @@
+let pad = null
+
 function getPlayerColorFromNumber(player_number) {
     // returns color in hex
     // max number is 10
@@ -18,6 +20,20 @@ function getPlayerColorFromNumber(player_number) {
 
     return '#' + colors[player_number]
 
+}
+
+function enableButtons(data){
+    document.getElementById('undo').disabled = false
+    document.getElementById('redo').disabled = false;
+    document.getElementById('submit_stroke').disabled = false
+    pad.setReadOnly(false)
+}
+
+function disableButtons(data){
+    document.getElementById('undo').disabled = true
+    document.getElementById('redo').disabled = true;
+    document.getElementById('submit_stroke').disabled = true
+    pad.setReadOnly(true)
 }
 
 
@@ -74,6 +90,7 @@ function submit_stroke_to_server(player_number, pad) {
         player_number: player_number,
         new_board_state: encodeURIComponent(newBoardState)
     })
+    disableButtons()
 }
 
 // TO DO:
@@ -116,4 +133,5 @@ socket.on('disconnect', reason => {
 
 socket.on('room_id', displayRoomID)
 socket.on('new_image', update_image_from_server)
-socket.on('player_number', num => console.log(num))
+socket.on('player_number', disableButtons)
+socket.on('enable_turn', enableButtons)

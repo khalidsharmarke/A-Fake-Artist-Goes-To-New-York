@@ -108,11 +108,16 @@ io.on('connection', socket => {
 
     socket.emit('room_id', room_id)
     socket.emit('player_number', room.getPlayerNumber(socket.id))
+    // needed to enable turn for room creator
+    io.to(room.getCurrentPlayer()).emit('enable_turn', true)
 
     // update users in room for new image
     socket.on('gameplay_stroke', data => {
+        // send all clients in room new image
         io.in(room_id).emit('new_image', data)
-        room.nextTurn()
+        const nextPlayer = room.nextTurn()
+        console.log(nextPlayer)
+        io.to(nextPlayer).emit('enable_turn', true)
     });
 });
    

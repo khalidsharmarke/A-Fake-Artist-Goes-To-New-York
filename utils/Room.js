@@ -22,6 +22,9 @@ module.exports = class Room{
     getPlayerNumber(player_as_socket){
         return this.listOfPlayers.indexOf(player_as_socket)
     }
+    getCurrentPlayer(){
+        return this.listOfPlayers[this.nextPlayer]
+    }
     test(){
         console.log(this.#private)
     }
