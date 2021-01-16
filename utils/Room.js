@@ -18,12 +18,12 @@ module.exports = class Room{
         this.incrementPlayerNumber()
         return null
     }
-    addPlayer(player_as_socket){
-        this.listOfPlayers.push(player_as_socket)
+    addPlayer(player_as_socket_id){
+        this.listOfPlayers.push(player_as_socket_id)
         return null
     }
-    getPlayerNumber(player_as_socket){
-        return this.listOfPlayers.indexOf(player_as_socket)
+    getPlayerNumber(player_as_socket_id){
+        return this.listOfPlayers.indexOf(player_as_socket_id)
     }
     getCurrentPlayer(){
         return this.listOfPlayers[this.nextPlayerNumber]
