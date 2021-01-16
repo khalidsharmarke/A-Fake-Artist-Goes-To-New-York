@@ -1,6 +1,6 @@
 const PORT = process.env.PORT || 8000
 
-const {set_of_active_games, generate_game_id, checkIfGameAlive, createNewGame, getGameFromSet} = require('./utils/game')
+const {setOfActiveGames, checkIfGameExists, createNewGame, getRoomFromActiveSet} = require('./utils/game')
 
 const express = require('express')
 const app = express()
@@ -14,7 +14,6 @@ const io = require('socket.io')(server)
 const jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
-
 
 // Express cookie ////////////////////////////////////////////////////
 // need cookieParser middleware before we can do anything with cookies
@@ -30,7 +29,6 @@ const cookieOptions = {
 }
 app.use(cookieParser());
 
-//////////////////////////////////////
 // this needs to happen after we use the cookieparser middleware
 app.use('/', function (req, res, next) {
     // send back to root if user trying to access /game without cookie
@@ -43,11 +41,9 @@ app.use('/', function (req, res, next) {
     
     next()
 }, express.static('client'))
-//////////////////////////////////////
 
 app.post('/create_game', urlencodedParser, (req, res)=>{
     const new_game_id = createNewGame()
-	console.log(set_of_active_games)
 
     // Set cookie`
     res.cookie('room_id', new_game_id, cookieOptions) // options is optional
@@ -55,9 +51,8 @@ app.post('/create_game', urlencodedParser, (req, res)=>{
 })
 
 app.post('/join_game', urlencodedParser, (req, res)=>{
-	const game_id_to_join = Number(req.body.game_id)
-
-    const gameAlive = checkIfGameAlive(game_id_to_join)
+    const game_id_to_join = Number(req.body.game_id)
+    const gameAlive = checkIfGameExists(game_id_to_join)
     if (gameAlive){
 	    res.cookie('room_id', game_id_to_join, cookieOptions) // options is optional
 		res.redirect('/game')
@@ -71,7 +66,7 @@ app.post('/join_game', urlencodedParser, (req, res)=>{
 })
 
 // checks if client is assigned to room
-function getRoomFromSocket(socket_obj){
+function getRoomIDFromSocket(socket_obj){
     try{
         const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
         const room_id = Number(parsed_cookie['room_id'])
@@ -85,26 +80,31 @@ function getRoomFromSocket(socket_obj){
 
 // validates socket requests
 function validateSocket(socket_obj){
-    const room_id = getRoomFromSocket(socket_obj)
-    const room = getGameFromSet(room_id)
+    let result = null
+    const room_id = getRoomIDFromSocket(socket_obj)
+    const room = getRoomFromActiveSet(room_id)
     // adds socket to room if client is missing room and if room exists
     // will drop connections on server restart
     if (room_id !== null && !socket_obj.rooms.has(room_id) && room !== null){
         socket_obj.join(room_id)
         room.addPlayer(socket_obj.id)
-        return {room_id, room}
+        result = {room_id, room}
     }
     // drops connection if not validated
     else {
         socket_obj.disconnect(true)
-        return null
     }
+    console.log(result)
+    return result
 }
 
 // there exists documentation for Socket IO Middleware
 // possible to implement before io.on connection
 io.on('connection', socket => {
+    // validate all incoming connections
     const {room_id, room} = validateSocket(socket)
+    // stops server-side operations on invalid socket connection
+    if (room_id == null || room == null) return
 
     socket.emit('room_id', room_id)
     socket.emit('player_number', room.getPlayerNumber(socket.id))
@@ -112,12 +112,11 @@ io.on('connection', socket => {
     io.to(room.getCurrentPlayer()).emit('enable_turn', true)
 
     // update users in room for new image
-    socket.on('gameplay_stroke', data => {
+    socket.on('gameplay_stroke', image_as_json => {
         // send all clients in room new image
-        io.in(room_id).emit('new_image', data)
-        const nextPlayer = room.nextTurn()
-        console.log(nextPlayer)
-        io.to(nextPlayer).emit('enable_turn', true)
+        io.in(room_id).emit('new_image', image_as_json)
+        room.nextTurn()
+        io.to(room.getCurrentPlayer()).emit('enable_turn', true)
     });
 });
    
