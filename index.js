@@ -38,13 +38,11 @@ app.use('/', function (req, res, next) {
             return res.redirect('/')
         }
     }
-    
     next()
 }, express.static('client'))
 
 app.post('/create_game', urlencodedParser, (req, res)=>{
     const new_game_id = createNewGame()
-
     // Set cookie`
     res.cookie('room_id', new_game_id, cookieOptions) // options is optional
     res.redirect('/game')
@@ -67,15 +65,16 @@ app.post('/join_game', urlencodedParser, (req, res)=>{
 
 // checks if client is assigned to room
 function getRoomIDFromSocket(socket_obj){
+    let result = null
     try{
         const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
         const room_id = Number(parsed_cookie['room_id'])
-        return room_id
+        result = room_id
 	}
 	catch (e){ 
         console.log(e)
-		return null
-	}
+    }
+    return result
 }
 
 // validates socket requests
@@ -88,7 +87,7 @@ function validateSocket(socket_obj){
     if (room_id !== null && !socket_obj.rooms.has(room_id) && room !== null){
         socket_obj.join(room_id)
         room.addPlayer(socket_obj.id)
-        result = {room_id, room}
+        result = room
     }
     // drops connection if not validated
     else {
@@ -102,11 +101,11 @@ function validateSocket(socket_obj){
 // possible to implement before io.on connection
 io.on('connection', socket => {
     // validate all incoming connections
-    const {room_id, room} = validateSocket(socket)
+    const room = validateSocket(socket)
     // stops server-side operations on invalid socket connection
-    if (room_id == null || room == null) return
+    if (room == null) return
 
-    socket.emit('room_id', room_id)
+    socket.emit('room_id', room.id)
     socket.emit('player_number', room.getPlayerNumber(socket.id))
     // needed to enable turn for room creator
     io.to(room.getCurrentPlayer()).emit('enable_turn', true)
@@ -114,7 +113,7 @@ io.on('connection', socket => {
     // update users in room for new image
     socket.on('gameplay_stroke', image_as_json => {
         // send all clients in room new image
-        io.in(room_id).emit('new_image', image_as_json)
+        io.in(room.id).emit('new_image', image_as_json)
         room.nextTurn()
         io.to(room.getCurrentPlayer()).emit('enable_turn', true)
     });

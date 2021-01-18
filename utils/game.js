@@ -7,27 +7,24 @@ function generateGameId(){
 	return Math.floor(Math.random() * 1000)
 }
 
-function checkIfGameExists(game_id){
-    return setOfActiveGames.has(game_id)
+function checkIfGameExists(room_id){
+    return setOfActiveGames.has(room_id)
 }
 
-function getRoomFromActiveSet(game_id){
-    if (setOfActiveGames.has(game_id)){
-        return setOfActiveGames[game_id]
+function getRoomFromActiveSet(room_id){
+    if (checkIfGameExists(room_id)){
+        return setOfActiveGames[room_id]
     }
     return null
 }
 
 function createNewGame(){
     let result = undefined
-    // TODO:
-    // here we should instantiate a game obj
-    // to track game state and stack history
     try {
-        const game_id = generateGameId()
-        let game = new Room(game_id)
-        setOfActiveGames.add(game_id, game)
-        result = game_id
+        const room_id = generateGameId()
+        const room = new Room(room_id)
+        setOfActiveGames.add(room_id, room)
+        result = room_id
     }
     catch (e) {
         console.log(e)

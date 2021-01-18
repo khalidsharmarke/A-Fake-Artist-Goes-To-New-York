@@ -1,8 +1,9 @@
-module.exports = class Room{
-    constructor(){
+class Room{
+    constructor(room_id){
         this.listOfPlayers = []
         this.nextPlayerNumber = 0
         this.stackHistory = []
+        this.id = room_id
     }
     incrementPlayerNumber(){
         this.nextPlayerNumber++;
@@ -29,3 +30,5 @@ module.exports = class Room{
         return this.listOfPlayers[this.nextPlayerNumber]
     }
 }
+
+module.exports = Room

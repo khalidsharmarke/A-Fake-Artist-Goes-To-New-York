@@ -94,8 +94,8 @@ function submitStrokeToServer(player_number, pad) {
 }
 
 // overwrites current pad with JSONimage from server
-function updateImageFromServer(data) {
-    pad.loadJSON(JSON.parse(decodeURIComponent(data.new_board_state)))
+function updateImageFromServer(whiteboard_json_data) {
+    pad.loadJSON(JSON.parse(decodeURIComponent(whiteboard_json_data.new_board_state)))
     return 
 }
 
