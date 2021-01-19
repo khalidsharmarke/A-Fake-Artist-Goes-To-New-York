@@ -1,6 +1,6 @@
 const PORT = process.env.PORT || 8000
 
-const {setOfActiveGames, checkIfGameExists, createNewGame, getRoomFromActiveSet} = require('./utils/game')
+const {setOfActiveGames, checkIfGameExists, createNewGame, getRoomObjFromID} = require('./utils/game')
 
 const express = require('express')
 const app = express()
@@ -81,7 +81,7 @@ function getRoomIDFromSocket(socket_obj){
 function validateSocket(socket_obj){
     let result = null
     const room_id = getRoomIDFromSocket(socket_obj)
-    const room = getRoomFromActiveSet(room_id)
+    const room = getRoomObjFromID(room_id)
     // adds socket to room if client is missing room and if room exists
     // will drop connections on server restart
     if (room_id !== null && !socket_obj.rooms.has(room_id) && room !== null){
@@ -105,17 +105,18 @@ io.on('connection', socket => {
     // stops server-side operations on invalid socket connection
     if (room == null) return
 
+    let currentPlayerNumber = room.getCurrentPlayerSocket()
+
     socket.emit('room_id', room.id)
-    socket.emit('player_number', room.getPlayerNumber(socket.id))
+    socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id))
     // needed to enable turn for room creator
-    io.to(room.getCurrentPlayer()).emit('enable_turn', true)
+    io.to(currentPlayerNumber).emit('enable_turn', true)
 
     // update users in room for new image
     socket.on('gameplay_stroke', image_as_json => {
         // send all clients in room new image
         io.in(room.id).emit('new_image', image_as_json)
         room.nextTurn()
-        io.to(room.getCurrentPlayer()).emit('enable_turn', true)
+        io.to(currentPlayerNumber).emit('enable_turn', true)
     });
 });
-   

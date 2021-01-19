@@ -11,7 +11,7 @@ function checkIfGameExists(room_id){
     return setOfActiveGames.has(room_id)
 }
 
-function getRoomFromActiveSet(room_id){
+function getRoomObjFromID(room_id){
     if (checkIfGameExists(room_id)){
         return setOfActiveGames[room_id]
     }
@@ -21,10 +21,9 @@ function getRoomFromActiveSet(room_id){
 function createNewGame(){
     let result = undefined
     try {
-        const room_id = generateGameId()
-        const room = new Room(room_id)
-        setOfActiveGames.add(room_id, room)
-        result = room_id
+        const room = new Room(generateGameId())
+        setOfActiveGames.add(room)
+        result = room.id
     }
     catch (e) {
         console.log(e)
@@ -33,4 +32,4 @@ function createNewGame(){
     return result
 }
 
-module.exports = {setOfActiveGames, checkIfGameExists, createNewGame, getRoomFromActiveSet}
+module.exports = {setOfActiveGames, checkIfGameExists, createNewGame, getRoomObjFromID}

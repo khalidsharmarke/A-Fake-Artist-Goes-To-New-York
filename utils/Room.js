@@ -1,33 +1,32 @@
 class Room{
     constructor(room_id){
-        this.listOfPlayers = []
-        this.nextPlayerNumber = 0
+        this.listOfPlayerSockets = []
+        this.currentPlayerNumber = 0
         this.stackHistory = []
         this.id = room_id
     }
     incrementPlayerNumber(){
-        this.nextPlayerNumber++;
-        if (this.listOfPlayers.length == this.nextPlayerNumber){
-            this.nextPlayerNumber = 0
+        this.currentPlayerNumber++;
+        if (this.listOfPlayerSockets.length == this.currentPlayerNumber){
+            this.currentPlayerNumber = 0
         }
     }
     // TODO
     // this function should execute all logic required to move
-    // a room to its next turn
+    // a room to its next turn ie add to stack
     nextTurn(){
-        console.log(`player ${this.nextPlayerNumber + 1} is drawing`)
         this.incrementPlayerNumber()
         return null
     }
-    addPlayer(player_as_socket_id){
-        this.listOfPlayers.push(player_as_socket_id)
+    addPlayer(player_socket_id){
+        this.listOfPlayerSockets.push(player_socket_id)
         return null
     }
-    getPlayerNumber(player_as_socket_id){
-        return this.listOfPlayers.indexOf(player_as_socket_id)
+    getPlayerNumberFromSocketID(player_socket_id){
+        return this.listOfPlayerSockets.indexOf(player_socket_id)
     }
-    getCurrentPlayer(){
-        return this.listOfPlayers[this.nextPlayerNumber]
+    getCurrentPlayerSocket(){
+        return this.listOfPlayerSockets[this.currentPlayerNumber]
     }
 }
 

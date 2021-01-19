@@ -24,14 +24,14 @@ function getPlayerColorFromNumber(player_number) {
 
 }
 // allows player interations with interface
-function enablePlayerActions(data){
+function enablePlayerActions(){
     document.getElementById('undo').disabled = false
     document.getElementById('redo').disabled = false;
     document.getElementById('submit_stroke').disabled = false
     pad.setReadOnly(false)
 }
 // stops player interactions with interface 
-function disablePlayerActions(data){
+function disablePlayerActions(){
     document.getElementById('undo').disabled = true
     document.getElementById('redo').disabled = true;
     document.getElementById('submit_stroke').disabled = true
@@ -76,13 +76,13 @@ function gameInit(pad) {
     let player_number = Math.floor(Math.random() * 10) // temporary placeholder for player number
     pad.setLineColor(getPlayerColorFromNumber(player_number))
     document.getElementById('submit_stroke').onclick = function() {
-        submitStrokeToServer(player_number, pad)
+        submitPadToServer(player_number, pad)
     };
 }
 
 // after a player has submitted their stroke,
 // this function exports the whiteboard as JSON and sends it to the server
-function submitStrokeToServer(player_number, pad) {
+function submitPadToServer(player_number, pad) {
     const newBoardState = JSON.stringify(pad.toJSON())
     socket.emit('gameplay_stroke', {
         player_number: player_number,
