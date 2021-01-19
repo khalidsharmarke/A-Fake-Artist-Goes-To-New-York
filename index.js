@@ -105,18 +105,17 @@ io.on('connection', socket => {
     // stops server-side operations on invalid socket connection
     if (room == null) return
 
-    let currentPlayerNumber = room.getCurrentPlayerSocket()
-
     socket.emit('room_id', room.id)
     socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id))
     // needed to enable turn for room creator
-    io.to(currentPlayerNumber).emit('enable_turn', true)
+    io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
 
     // update users in room for new image
     socket.on('gameplay_stroke', image_as_json => {
         // send all clients in room new image
         io.in(room.id).emit('new_image', image_as_json)
         room.nextTurn()
-        io.to(currentPlayerNumber).emit('enable_turn', true)
+        // has to reperform operation due to new room state
+        io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
     });
 });
