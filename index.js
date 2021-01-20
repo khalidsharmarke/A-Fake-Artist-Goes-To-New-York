@@ -1,8 +1,10 @@
 const PORT = process.env.PORT || 8000
 
+const {setOfActiveGames, checkIfGameExists, createNewGame, getRoomObjFromID} = require('./utils/game')
+
 const express = require('express')
 const app = express()
-var bodyParser = require('body-parser')
+const bodyParser = require('body-parser')
 
 const server = app.listen(PORT, () => console.log(`running on port ${PORT}`))
 const io = require('socket.io')(server)
@@ -12,7 +14,6 @@ const io = require('socket.io')(server)
 const jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
-
 
 // Express cookie ////////////////////////////////////////////////////
 // need cookieParser middleware before we can do anything with cookies
@@ -28,59 +29,29 @@ const cookieOptions = {
 }
 app.use(cookieParser());
 
-
-//////////////////////////////////////
 // this needs to happen after we use the cookieparser middleware
 app.use('/', function (req, res, next) {
     // send back to root if user trying to access /game without cookie
     if (['/game/', '/game/index.html'].includes(req.originalUrl)){
-        if ("room_id" in req.cookies){
+        if (!("room_id" in req.cookies)){
             // means no room_id in cookies array
             return res.redirect('/')
         }
     }
-    
     next()
 }, express.static('client'))
-//////////////////////////////////////
-
-
-function generate_game_id(){
-	return Math.floor(Math.random() * 1000)
-}
-
-// TO DO:
-// implement check if game is alive
-let list_of_active_games = []
 
 app.post('/create_game', urlencodedParser, (req, res)=>{
-	let new_game_id = generate_game_id()
-	// keep generating ID if it already exists, highly unlikely...
-	let successfully_inserted = false
-
-	while (!successfully_inserted){
-		if(list_of_active_games.indexOf(new_game_id)){
-			list_of_active_games.push(new_game_id) 
-			successfully_inserted = true	
-		}
-		else{
-			new_game_id = generate_game_id()
-		}
-		
-	}
-	console.log(list_of_active_games)
-
-    // Set cookie
+    const new_game_id = createNewGame()
+    // Set cookie`
     res.cookie('room_id', new_game_id, cookieOptions) // options is optional
     res.redirect('/game')
-
 })
 
 app.post('/join_game', urlencodedParser, (req, res)=>{
-	const game_id_to_join = Number(req.body.game_id)
-	console.log(list_of_active_games)
-	if(list_of_active_games.includes(game_id_to_join)){
-		// game exists
+    const game_id_to_join = Number(req.body.game_id)
+    const gameAlive = checkIfGameExists(game_id_to_join)
+    if (gameAlive){
 	    res.cookie('room_id', game_id_to_join, cookieOptions) // options is optional
 		res.redirect('/game')
 	}
@@ -89,49 +60,62 @@ app.post('/join_game', urlencodedParser, (req, res)=>{
         // TODO : 
         // need to flash on page that the game_id entered doesnt exist
 		res.redirect('/')
-	}
+    }
 })
 
 // checks if client is assigned to room
-function getRoomFromSocket(socket_obj){
+function getRoomIDFromSocket(socket_obj){
+    let result = null
     try{
         const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
         const room_id = Number(parsed_cookie['room_id'])
-        return room_id
+        result = room_id
 	}
 	catch (e){ 
         console.log(e)
-		return null
-	}
+    }
+    return result
 }
 
 // validates socket requests
 function validateSocket(socket_obj){
-    const room_id = getRoomFromSocket(socket_obj)
-
+    let result = null
+    const room_id = getRoomIDFromSocket(socket_obj)
+    const room = getRoomObjFromID(room_id)
     // adds socket to room if client is missing room and if room exists
     // will drop connections on server restart
-    if (room_id !== null && !socket_obj.rooms.has(room_id) && list_of_active_games.includes(room_id)){
+    if (room_id !== null && !socket_obj.rooms.has(room_id) && room !== null){
         socket_obj.join(room_id)
+        room.addPlayer(socket_obj.id)
+        result = room
     }
     // drops connection if not validated
     else {
         socket_obj.disconnect(true)
     }
-
-    return room_id
+    console.log(result)
+    return result
 }
 
+// there exists documentation for Socket IO Middleware
+// possible to implement before io.on connection
 io.on('connection', socket => {
-    const room_id = validateSocket(socket)
-    // TODO:
-    // here we should instantiate a game obj
-    // to track game state and stack history
+    // validate all incoming connections
+    const room = validateSocket(socket)
+    // stops server-side operations on invalid socket connection
+    if (room == null) return
+
+    socket.emit('room_id', room.id)
+    socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id))
+    // needed to enable turn for room creator
+    io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
 
     // update users in room for new image
-    socket.on('gameplay_stroke', data => {
-        console.log(data)
-        io.in(room_id).emit('new_image', data)
+    socket.on('gameplay_stroke', image_as_json => {
+        // send all clients in room new image
+        io.in(room.id).emit('new_image', image_as_json)
+        room.nextTurn()
+        // has to reperform operation due to new room state
+        io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
     });
 });
-   
