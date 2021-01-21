@@ -64,10 +64,10 @@ app.post('/join_game', urlencodedParser, (req, res)=>{
 })
 
 // checks if client is assigned to room
-function getRoomIDFromSocket(socket_obj){
+function getRoomIDFromSocketCookie(socket){
     let result = null
     try{
-        const parsed_cookie = cookie.parse(socket_obj.request.headers.cookie)
+        const parsed_cookie = cookie.parse(socket.request.headers.cookie)
         const room_id = Number(parsed_cookie['room_id'])
         result = room_id
 	}
@@ -78,32 +78,29 @@ function getRoomIDFromSocket(socket_obj){
 }
 
 // validates socket requests
-function validateSocket(socket_obj){
-    let result = null
-    const room_id = getRoomIDFromSocket(socket_obj)
+function validateSocket(socket, next){
+    const room_id = getRoomIDFromSocketCookie(socket)
     const room = getRoomObjFromID(room_id)
     // adds socket to room if client is missing room and if room exists
     // will drop connections on server restart
-    if (room_id !== null && !socket_obj.rooms.has(room_id) && room !== null){
-        socket_obj.join(room_id)
-        room.addPlayer(socket_obj.id)
-        result = room
+    if (room_id !== null && !socket.rooms.has(room_id) && room !== null){
+        socket.join(room_id)
+        room.addPlayer(socket.id)
+        socket.room = room
     }
     // drops connection if not validated
     else {
-        socket_obj.disconnect(true)
+        socket.disconnect(true)
     }
-    console.log(result)
-    return result
+    return next()
 }
+
+io.use(validateSocket)
 
 // there exists documentation for Socket IO Middleware
 // possible to implement before io.on connection
 io.on('connection', socket => {
-    // validate all incoming connections
-    const room = validateSocket(socket)
-    // stops server-side operations on invalid socket connection
-    if (room == null) return
+    const room = socket.room
 
     socket.emit('room_id', room.id)
     socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id))
