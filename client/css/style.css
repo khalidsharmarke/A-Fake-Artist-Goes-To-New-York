@@ -1,5 +1,9 @@
 #sketchpad canvas {
-    border: .1rem solid rgb(180, 180, 180);
-    cursor: crosshair;
-    display: block;
+	border: 0.1rem solid rgb(180, 180, 180);
+	cursor: crosshair;
+	display: block;
+}
+
+.add-margin-top {
+	margin-top: 50px;
 }

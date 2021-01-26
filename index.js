@@ -106,9 +106,13 @@ io.on('connection', socket => {
     if (room == null) return
 
     socket.emit('room_id', room.id)
-    socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id))
-    // needed to enable turn for room creator
-    io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
+    socket.emit('player_number', room.getPlayerNumberFromSocketID(socket.id) + 1)
+    io.in(room.id).emit('player_list', room.listOfPlayerSockets)
+
+    // notify room of player disconnecting
+    socket.on('disconnect', () => {
+        io.in(room.id).emit('player_list', room.listOfPlayerSockets)
+    })
 
     // update users in room for new image
     socket.on('gameplay_stroke', image_as_json => {
@@ -118,4 +122,10 @@ io.on('connection', socket => {
         // has to reperform operation due to new room state
         io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
     });
+
+    socket.on('request_game-start', () => {
+        //do start room logic
+        io.in(room.id).emit('start_game')
+        io.to(room.getCurrentPlayerSocket()).emit('enable_turn', true)
+    })
 });

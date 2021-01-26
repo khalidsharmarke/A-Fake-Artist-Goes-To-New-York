@@ -1,8 +1,10 @@
 // TODO:
 // refactor to have pad accessible by server
 let pad = null
+let player_number = null
+let board = null
 
-function getPlayerColorFromNumber(player_number) {
+function getPlayerColorFromNumber() {
     // returns color in hex
     // max number is 10
     console.assert(player_number <= 10)
@@ -25,23 +27,24 @@ function getPlayerColorFromNumber(player_number) {
 }
 // allows player interations with interface
 function enablePlayerActions(){
-    document.getElementById('undo').disabled = false
-    document.getElementById('redo').disabled = false;
-    document.getElementById('submit_stroke').disabled = false
+    if (board == null) return
+    board.querySelector('#undo').disabled = false
+    board.querySelector('#redo').disabled = false;
+    board.querySelector('#submit_stroke').disabled = false
     pad.setReadOnly(false)
 }
 // stops player interactions with interface 
 function disablePlayerActions(){
-    document.getElementById('undo').disabled = true
-    document.getElementById('redo').disabled = true;
-    document.getElementById('submit_stroke').disabled = true
+    if (board == null) return
+    board.querySelector('#undo').disabled = true
+    board.querySelector('#redo').disabled = true;
+    board.querySelector('#submit_stroke').disabled = true
     pad.setReadOnly(true)
 }
 
-
-function sketchpadInit(Sketchpad) {
+function sketchpadInit(Sketchpad, board) {
     // hookup whiteboard buttons 
-    let el = document.getElementById('sketchpad');
+    let el = board.querySelector('#sketchpad');
     pad = new Sketchpad(el, {
         line: {
             size: 5
@@ -57,13 +60,13 @@ function sketchpadInit(Sketchpad) {
         pad.undo();
         pad.setReadOnly(false)
     }
-    document.getElementById('undo').onclick = undo;
+    board.querySelector('#undo').onclick = undo;
 
     // redo
     function redo() {
         pad.redo();
     }
-    document.getElementById('redo').onclick = redo;
+    board.querySelector('#redo').onclick = redo;
 
     // resize
     window.onresize = function(e) {
@@ -72,17 +75,16 @@ function sketchpadInit(Sketchpad) {
     return pad
 }
 
-function gameInit(pad) {
-    let player_number = Math.floor(Math.random() * 10) // temporary placeholder for player number
-    pad.setLineColor(getPlayerColorFromNumber(player_number))
-    document.getElementById('submit_stroke').onclick = function() {
-        submitPadToServer(player_number, pad)
+function gameInit(pad, board) {
+    pad.setLineColor(getPlayerColorFromNumber())
+    board.querySelector('#submit_stroke').onclick = function() {
+        submitPadToServer(pad)
     };
 }
 
 // after a player has submitted their stroke,
 // this function exports the whiteboard as JSON and sends it to the server
-function submitPadToServer(player_number, pad) {
+function submitPadToServer(pad) {
     const newBoardState = JSON.stringify(pad.toJSON())
     socket.emit('gameplay_stroke', {
         player_number: player_number,
@@ -99,15 +101,42 @@ function updateImageFromServer(whiteboard_json_data) {
     return 
 }
 
-requirejs(['responsive-sketchpad/sketchpad'],
-    function(Sketchpad) {
-        pad = sketchpadInit(Sketchpad)
-        gameInit(pad)
-    }
-)
-
 function displayRoomID(room_id){
     document.getElementById('room_id').innerHTML = `Your Room Code is ${room_id}`
+}
+
+function createBoard(){
+    return document.querySelector('template').content.cloneNode(true).firstElementChild
+}
+
+function BoardInit(){
+    board = createBoard()
+
+    requirejs(['responsive-sketchpad/sketchpad'],
+        function(Sketchpad) {
+            pad = sketchpadInit(Sketchpad, board)
+            gameInit(pad, board)
+        }
+    )
+    document.querySelector('.container').append(board)
+    document.querySelector('#start_button').remove()
+    if (player_number !== 1){
+        disablePlayerActions()
+    }
+    return
+}
+
+function listPlayersOnPage(list_of_players){
+    const target = document.querySelector('#list_of_players')
+    while (target.firstChild){
+        target.firstChild.remove()
+    }
+    list_of_players.forEach((player, index) => {
+        const node = document.createElement('div')
+        node.innerHTML = `${index + 1}. ${player}`
+        target.append(node)
+    })
+    return
 }
 
 const socket = io()
@@ -128,5 +157,10 @@ socket.on('connect_error', error => {
 // action handlers after receiving messages from server:
 socket.on('room_id', displayRoomID)
 socket.on('new_image', updateImageFromServer)
-socket.on('player_number', disablePlayerActions)
+socket.on('player_number', assigned_number => player_number = assigned_number)
 socket.on('enable_turn', enablePlayerActions)
+socket.on('start_game', BoardInit)
+socket.on('player_list', listPlayersOnPage)
+document.querySelector('#start_button').onclick = e => {
+    socket.emit('request_game-start')
+}
