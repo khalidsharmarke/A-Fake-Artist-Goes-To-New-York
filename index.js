@@ -78,7 +78,7 @@ function getRoomIDFromSocketCookie(socket){
 }
 
 // validates socket requests
-function validateSocket(socket, next){
+function linkSocketToRoom(socket, next){
     const room_id = getRoomIDFromSocketCookie(socket)
     const room = getRoomObjFromID(room_id)
     // adds socket to room if client is missing room and if room exists
@@ -95,7 +95,7 @@ function validateSocket(socket, next){
     return next()
 }
 
-io.use(validateSocket)
+io.use(linkSocketToRoom)
 
 // there exists documentation for Socket IO Middleware
 // possible to implement before io.on connection
