@@ -87,7 +87,7 @@ function gameInit(pad, board) {
 // this function exports the whiteboard as JSON and sends it to the server
 function submitPadToServer(pad) {
 	const newBoardState = JSON.stringify(pad.toJSON())
-	socket.emit("gameplay_stroke", {
+	this.socket.emit("gameplay_stroke", {
 		player_number: player_number,
 		new_board_state: encodeURIComponent(newBoardState),
 	})
@@ -146,13 +146,13 @@ function listPlayersOnPage(list_of_players) {
 const socket = io()
 
 // redirect to homepage on server connection rejection
-socket.on("disconnect", reason => {
+this.socket.on("disconnect", reason => {
 	console.log(reason)
 	alert("disconnected")
 	window.location = "/"
 })
 // redirect to homepage on other connection errors
-socket.on("connect_error", error => {
+this.socket.on("connect_error", error => {
 	console.log(error)
 	alert("connection error")
 	window.location = "/"
@@ -166,5 +166,5 @@ socket.on("enable_turn", enablePlayerActions)
 socket.on("start_game", boardInit)
 socket.on("player_list", listPlayersOnPage)
 document.querySelector("#start_button").onclick = e => {
-	socket.emit("request_game-start")
+	this.socket.emit("request_game-start")
 }
