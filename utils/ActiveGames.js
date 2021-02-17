@@ -1,5 +1,3 @@
-// TO DO:
-// implement remove game after no users present
 class ActiveGames {
 	add(room_obj) {
 		this[room_obj.id] = room_obj

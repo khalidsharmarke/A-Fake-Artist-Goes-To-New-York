@@ -65,7 +65,6 @@ app.post("/join_game", urlencodedParser, (req, res) => {
 		res.cookie("room_id", game_id_to_join, cookieOptions) // options is optional
 		res.redirect("/game")
 	} else {
-		console.log(`${game_id_to_join} does not exist. redirecting to /`)
 		// TODO :
 		// need to flash on page that the game_id entered doesnt exist
 		res.redirect("/")
@@ -137,7 +136,6 @@ io.on("connection", socket => {
 				const currPlayer = room.getCurrentPlayerSocket()
 				io.in(room.id).emit("current_player", currPlayer)
 				io.to(currPlayer).emit("enable_turn")
-				console.log(currPlayer)
 			}
 		}
 	})
