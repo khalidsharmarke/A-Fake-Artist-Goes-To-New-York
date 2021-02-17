@@ -12,14 +12,15 @@ function checkIfGameExists(room_id){
 }
 
 function getRoomObjFromID(room_id){
+    let result = null
     if (checkIfGameExists(room_id)){
-        return setOfActiveGames[room_id]
+        result = setOfActiveGames[room_id]
     }
-    return null
+    return result
 }
 
 function createNewGame(){
-    let result = undefined
+    let result = null
     try {
         const room = new Room(generateGameId())
         setOfActiveGames.add(room)
