@@ -48,8 +48,41 @@ Refer to End-Game Logic above for rules on ending the game.
 
 ## Design and Description
 This project uses:  
-- Express.js - to handle web requests  
+-  Express.js - to handle web requests  
 -  Socket.io - to handle socket connection instances for each room  
 -  Responsive-Sketchpad - to handle client drawing capabilities  
+-  CookieParser.js - to handle ensuring client room
+
+On request from landing page, server will redirect them to the game page. with a cookie
+based on whether they requested to join or create a game.  
+On request to create a game, an instance of the Room class is created that'll track  
+game state logic
+  
+Upon arriving on the game page, the client will have an instance of the Player class created.  
+It handles:  
+- socket connection event emitting/listening
+- game state on client-side
+- creating/updating UI elements
+The server will then track the
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
