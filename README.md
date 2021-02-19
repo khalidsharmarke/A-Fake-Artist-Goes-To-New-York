@@ -53,8 +53,8 @@ This project uses:
 -  Responsive-Sketchpad - to handle client drawing capabilities  
 -  CookieParser.js - to handle ensuring client room
 
-On request from landing page, server will redirect them to the game page. with a cookie
-based on whether they requested to join or create a game.  
+On request from landing page, the server will redirect them to the game page  
+with a cookie based on whether they requested to join or create a game.  
 On request to create a game, an instance of the Room class is created that'll track  
 game state logic
   
@@ -63,7 +63,15 @@ It handles:
 - socket connection event emitting/listening
 - game state on client-side
 - creating/updating UI elements
-The server will then track the
+  
+The server will then track the state of each game based on each players submission of their drawing  
+where the client will emit to the server the JSON copy of the canvas and the server will emit to  
+the other clients in the room the JSON copy.
+
+Credits to tsand:  
+Resposive-Sketchpad - https://github.com/tsand/responsive-sketchpad
+
+
 
 
 
