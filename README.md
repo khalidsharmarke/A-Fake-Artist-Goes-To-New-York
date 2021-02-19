@@ -28,7 +28,7 @@ If they are reasonably correct with their guess, then the Fake Artist wins.
 If incorrect, then the Artists win.  
 
 Clients start by landing on the homepage at the URL above where they can create their own.  
-- screenshot of landing page-
+- screenshot of landing page
 
 Once either has been selected, they'll be navigated to the game page where a socket connection  
 is established between the client and server.  
@@ -36,10 +36,10 @@ From here, they can share their room code with friends to have them join the roo
 
 If they created the room, once their friends have all joined, they can start the game by pressing the 'Start Game'  
 button.  
-- screenshot of start game button -
+- screenshot of start game button
 
 From here, the game will start and each client will receive their roles and the room's prompt.  
-- screenshots of each role -
+- screenshots of each role
 
 Each player will have the opportunity to draw and undo/redo their drawing before submission.  
 
@@ -48,8 +48,8 @@ Refer to End-Game Logic above for rules on ending the game.
 
 ## Design and Description
 This project uses:  
-  Express.js - to handle web requests  
-  Socket.io - to handle socket connection instances for each room  
-  Responsive-Sketchpad - to handle client drawing capabilities  
+- Express.js - to handle web requests  
+-  Socket.io - to handle socket connection instances for each room  
+-  Responsive-Sketchpad - to handle client drawing capabilities  
 
 
