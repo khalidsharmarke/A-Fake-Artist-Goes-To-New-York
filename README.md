@@ -1,5 +1,8 @@
 # A-Fake-Artist-Goes-To-New-York
 a fan-made online version of the card game by Oink Games
+Live Version Can Be Found At:
+  http://kshar.hopto.org
+
 
 
 
