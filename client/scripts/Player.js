@@ -54,7 +54,7 @@ class Player {
 		}
 	}
 	displayCurrentPlayer(player_id) {
-		const playerName = player_id
+		let playerName = player_id
 		if (playerName == this.socket.id) {
 			playerName = "Your"
 		}
