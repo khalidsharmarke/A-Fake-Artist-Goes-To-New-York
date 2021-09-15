@@ -39,7 +39,7 @@ app.use(
 	"/",
 	function (req, res, next) {
 		// send back to root if user trying to access /game without cookie
-		if (["/game/", "/game/index.html"].includes(req.originalUrl)) {
+		if (["/game", "/game/index.html"].includes(req.originalUrl)) {
 			if (!("room_id" in req.cookies)) {
 				// means no room_id in cookies array
 				return res.redirect("/")
@@ -47,14 +47,14 @@ app.use(
 		}
 		return next()
 	},
-	express.static("client")
+	express.static(__dirname + "/client")
 )
 
 app.post("/create_game", urlencodedParser, (req, res) => {
 	const new_game_id = createNewGame()
 	// Set cookie`
 	res.cookie("room_id", new_game_id, cookieOptions) // options is optional
-	res.redirect("/game")
+	res.redirect("game")
 })
 
 app.post("/join_game", urlencodedParser, (req, res) => {
@@ -62,7 +62,7 @@ app.post("/join_game", urlencodedParser, (req, res) => {
 	const gameAlive = checkIfGameExists(game_id_to_join)
 	if (gameAlive) {
 		res.cookie("room_id", game_id_to_join, cookieOptions) // options is optional
-		res.redirect("/game")
+		res.redirect("game")
 	} else {
 		// TODO :
 		// need to flash on page that the game_id entered doesnt exist
