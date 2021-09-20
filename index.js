@@ -51,7 +51,7 @@ app.use(
 		}
 		return next();
 	},
-	express.static(__dirname + 'client'),
+	express.static(__dirname + '/client'),
 );
 
 app.post('/create_game', urlencodedParser, (req, res) => {
