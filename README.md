@@ -8,6 +8,8 @@ Live Version Can Be Found At:
 2) `npm install` in root of project
 3) `npm run dev`
 
+![](https://giphy.com/gifs/aT3VYchfzkebeVUvY0)
+
 ## How To Play
 A Fake Artist Goes To New York is a social deception game intended for 5 - 10 players.  
 There are 2 roles: Artists and one Fake Artist.  
